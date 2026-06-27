@@ -44,6 +44,12 @@ const contactInquirySchema = new mongoose.Schema(
       minlength: 10,
       maxlength: 2000,
     },
+
+    status: {
+      type: String,
+      enum: ["Pending", "Contacted", "Resolved"],
+      default: "Pending",
+    },
   },
   {
     timestamps: true,

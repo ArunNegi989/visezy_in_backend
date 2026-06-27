@@ -30,11 +30,45 @@ exports.createInquiry = async (req, res) => {
 exports.getInquiries = async (req, res) => {
   try {
     const page = Number(req.query.page) || 1;
-    const limit = 10;
+    const limit = Number(req.query.limit) || 10;
 
-    const total = await ContactInquiry.countDocuments();
+    const search = req.query.search || "";
+    const status = req.query.status || "";
 
-    const inquiries = await ContactInquiry.find()
+    const query = {};
+
+    if (search) {
+      query.$or = [
+        {
+          name: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+        {
+          email: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+        {
+          phone: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+      ];
+    }
+
+    if (status && status !== "All") {
+      query.status = status;
+    }
+
+    const total = await ContactInquiry.countDocuments(
+      query
+    );
+
+    const inquiries = await ContactInquiry.find(query)
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit);
@@ -58,7 +92,42 @@ exports.getInquiries = async (req, res) => {
 
 exports.getInquiry = async (req, res) => {
   try {
-    const inquiry = await ContactInquiry.findById(req.params.id);
+    const inquiry = await ContactInquiry.findById(
+      req.params.id
+    );
+
+    if (!inquiry) {
+      return res.status(404).json({
+        success: false,
+        message: "Inquiry not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: inquiry,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+exports.updateInquiryStatus = async (
+  req,
+  res
+) => {
+  try {
+    const { status } = req.body;
+
+    const inquiry =
+      await ContactInquiry.findByIdAndUpdate(
+        req.params.id,
+        { status },
+        { new: true }
+      );
 
     if (!inquiry) {
       return res.status(404).json({
