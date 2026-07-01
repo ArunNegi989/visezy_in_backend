@@ -93,6 +93,7 @@ adminSchema.pre("save", async function () {
         salt
     );
 });
+
 adminSchema.methods.comparePassword =
     async function (password) {
         return await bcrypt.compare(
