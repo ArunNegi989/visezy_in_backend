@@ -1,5 +1,5 @@
 const ContactInquiry = require("../models/ContactiIquiry");
-const sendContactEmail = require("../utils/sendContactEmail");
+const sendContactEmail = require("../services/contactEmail");
 
 exports.createInquiry = async (req, res) => {
   try {
